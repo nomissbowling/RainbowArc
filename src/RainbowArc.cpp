@@ -51,7 +51,7 @@ string rainbow(int ac, char **av)
   int cnt = 0;
   cv::Mat frm;
   while(cap.read(frm)){
-#if 1 // fake input from image
+#if 0 // fake input from image
     frm = cv::imread("Rainbow_pen.png", -1);
     // cv::cvtColor(frm, frm, CV_BGR2RGB);
     cv::resize(frm, frm, cv::Size(width, height), 0, 0, cv::INTER_LANCZOS4);
@@ -79,7 +79,7 @@ string rainbow(int ac, char **av)
         hue = 179 - ((t + 15) % 180);
         // if(hue > 135) o = false; // 270 < Hue < 360
         h[i] = cv::saturate_cast<uchar>((o ? cnt + hue : h[i]) % 180); // H
-        // s[i] = cv::saturate_cast<uchar>(255 - q); // s[i]); // S
+        s[i] = cv::saturate_cast<uchar>(255 - q); // s[i]); // S
         v[i] = cv::saturate_cast<uchar>(64 + 191 * q / 255); // v[i]); // V
       }
     }
