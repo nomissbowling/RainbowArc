@@ -65,6 +65,25 @@ string rainbow(int ac, char **av)
     cv::cvtColor(frm, hsv, CV_BGR2HSV);
     vector<cv::Mat> pl; // H S V planes
     cv::split(hsv, pl);
+#if 1
+    uchar *u = gr.data;
+    for(int j = 0; j < hsv.rows; ++j){
+      uchar *h = pl[0].ptr<uchar>(j);
+      uchar *s = pl[1].ptr<uchar>(j);
+      uchar *v = pl[2].ptr<uchar>(j);
+      for(int i = 0; i < hsv.cols; ++i){
+        uchar q = *u++;
+        bool o = true;
+        uchar hue = h[i];
+        uchar t = (uchar)(179 * ((hsv.rows - j) + i) / (hsv.rows + hsv.cols));
+        hue = 179 - ((t + 15) % 180);
+        // if(hue > 135) o = false; // 270 < Hue < 360
+        h[i] = cv::saturate_cast<uchar>((o ? cnt + hue : h[i]) % 180); // H
+        // s[i] = cv::saturate_cast<uchar>(255 - q); // s[i]); // S
+        v[i] = cv::saturate_cast<uchar>(64 + 191 * q / 255); // v[i]); // V
+      }
+    }
+#endif
     cv::merge(pl, hsv);
     cv::cvtColor(hsv, hsv, CV_HSV2BGR); // assume BGR as HSV
     cv::imshow(wn[2], hsv); // hsv.channels() == 3
