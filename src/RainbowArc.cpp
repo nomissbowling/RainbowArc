@@ -51,6 +51,11 @@ string rainbow(int ac, char **av)
   int cnt = 0;
   cv::Mat frm;
   while(cap.read(frm)){
+#if 1 // fake input from image
+    frm = cv::imread("Rainbow_pen.png", -1);
+    // cv::cvtColor(frm, frm, CV_BGR2RGB);
+    cv::resize(frm, frm, cv::Size(width, height), 0, 0, cv::INTER_LANCZOS4);
+#endif
     cv::imshow(wn[0], frm);
     cv::Mat gr, hsv;
     cv::cvtColor(frm, gr, CV_BGR2GRAY);
