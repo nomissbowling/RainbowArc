@@ -70,6 +70,22 @@ cv::Mat cvw32capscr(const cv::Rect &rct, const cv::Size &sz)
 
 #if 1
 
+void dspFPS(const cv::Mat &frm, int r, int c,
+  const cv::Scalar &col, double sz, int th,
+  char *s0, double fps, char *s1, double ms, char *s2, int64 tick)
+{
+  ostringstream oss;
+  // oss.str("");
+  // oss.clear(stringstream::goodbit);
+  oss << s0 << fixed << setprecision(1) << fps;
+  oss << s1 << fixed << setprecision(1) << ms;
+  oss << s2 << hex << setw(8) << setfill('0') << tick;
+  cv::putText(frm, oss.str(),
+    cv::Point(2 + 16 * c, 32 * (r + 1)), // top-left
+    cv::FONT_HERSHEY_SIMPLEX, sz, col, th, // thickness=1
+    cv::LINE_AA, false); // lineType=LINE_8, bottomLeftOrigin=false
+}
+
 string test_cvw32capscr(int ac, char **av)
 {
   vector<string> wn({"original", "gray", "Hue", "Alpha"});
@@ -111,21 +127,14 @@ string test_cvw32capscr(int ac, char **av)
       tm.reset();
       tm.start();
     }
-    ostringstream oss;
-    oss << "cv " << fixed << setprecision(1) << 1000 * frdif / dur;
-    oss << "FPS, " << fixed << setprecision(1) << dur;
-    oss << "ms, Tick " << hex << setw(8) << setfill('0') << ck;
-    cv::putText(frm, oss.str(), cv::Point(2, 32), // top-left
-      cv::FONT_HERSHEY_SIMPLEX, 1.0, cv::Scalar(255, 255, 0), 2, // thickness=2
-      cv::LINE_AA, false); // lineType=LINE_8, bottomLeftOrigin=false
-    oss.str("");
-    oss.clear(stringstream::goodbit);
-    oss << "tm " << fixed << setprecision(1) << tm.getFPS();
-    oss << "FPS, TSec " << fixed << setprecision(1) << tm.getTimeSec();
-    oss << ", Tick " << hex << setw(8) << setfill('0') << tm.getTimeTicks();
-    cv::putText(frm, oss.str(), cv::Point(2, 64), // top-left
-      cv::FONT_HERSHEY_SIMPLEX, 1.0, cv::Scalar(255, 0, 255), 2, // thickness=2
-      cv::LINE_AA, false); // lineType=LINE_8, bottomLeftOrigin=false
+    dspFPS(frm, 0, 0, cv::Scalar(255, 255, 0), 1.0, 2,
+      "cv ", 1000 * frdif / dur,
+      "FPS, ", dur,
+      "ms, Tick ", ck);
+    dspFPS(frm, 1, 0, cv::Scalar(255, 0, 255), 1.0, 2,
+      "tm ", tm.getFPS(),
+      "FPS, TSec ", tm.getTimeSec(),
+      ", Tick ", tm.getTimeTicks());
 #endif
     cv::imshow(wn[0], frm);
     cv::Mat im(frm);
