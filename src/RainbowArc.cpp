@@ -19,12 +19,15 @@
    /LIBPATH:"C:\Program Files (x86)\Windows Kits\10\Lib\10.0.17763.0\ucrt\x64"
    /LIBPATH:"C:\Program Files (x86)\Windows Kits\10\Lib\10.0.17763.0\um\x64"
    opencv_world3412.lib
+   ..\bin\CVw32CapScr.lib
   del ..\bin\RainbowArc.obj
 */
 
 #include "RainbowArc.h"
+#include "CVw32CaptureScreen.h"
 
 using namespace rainbowarc;
+using namespace cvw32capturescreen;
 
 string rainbow(int ac, char **av)
 {
@@ -55,6 +58,8 @@ string rainbow(int ac, char **av)
     frm = cv::imread("Rainbow_pen.png", -1);
     // cv::cvtColor(frm, frm, CV_BGR2RGB);
     cv::resize(frm, frm, cv::Size(width, height), 0, 0, cv::INTER_LANCZOS4);
+#else // fake input from screen
+    frm = cvw32capscr(cv::Rect(800, 200, 320, 240), cv::Size(width, height));
 #endif
     cv::imshow(wn[0], frm);
     cv::Mat gr, hsv;
