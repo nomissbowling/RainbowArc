@@ -14,11 +14,18 @@
 #include <sstream>
 #include <vector>
 
-#include <windows.h>
+// #pragma comment(linker, "/export:<alias>=<decorated_name>")
+#ifdef __MAKE_DLL__
+#define DllExport __declspec(dllexport)
+#else
+#define DllExport __declspec(dllimport)
+#endif
 
 namespace cvw32capturescreen {
 
 using namespace std;
+
+DllExport cv::Mat cvw32capscr(const cv::Rect &rct, const cv::Size &sz);
 
 }
 

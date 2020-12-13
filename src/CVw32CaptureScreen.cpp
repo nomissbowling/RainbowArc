@@ -10,7 +10,15 @@
   x64 compiler/linker
   "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Tools\MSVC\14.16.27023\bin\Hostx64\x64\cl.exe"
    -source-charset:utf-8 -execution-charset:utf-8
-   -EHsc -Fe..\bin\CVw32CaptureScreen.exe ..\src\CVw32CaptureScreen.cpp
+   -EHsc
+
+   // for make dll
+    -D__MAKE_DLL__ -LD -Fe..\bin\CVw32CapScr.dll
+
+   // for testing exe
+    -Fe..\bin\CVw32CaptureScreen.exe
+
+   ..\src\CVw32CaptureScreen.cpp
    -I..\include
    -IC:\OpenCV3\include
   (-I"C:\Program Files (x86)\Windows Kits\10\Include\10.0.17763.0\ucrt")
@@ -24,6 +32,11 @@
    /LIBPATH:"C:\Program Files (x86)\Windows Kits\10\Lib\10.0.17763.0\um\x64"
    /LIBPATH:"C:\Program Files (x86)\Windows Kits\10\Lib\10.0.17763.0\winrt\x64"
    opencv_world3412.lib kernel32.lib user32.lib gdi32.lib
+
+   // for testing exe
+    ..\bin\CVw32CapScr.lib
+
+  del ..\bin\CVw32CapScr.exp
   del ..\bin\CVw32CaptureScreen.obj
 
   open writer fps = 30.0 fixed (may be faster than capture cycle)
@@ -33,11 +46,17 @@
   cv::getTickCount https://www.atmarkit.co.jp/ait/articles/1701/16/news141.html
 */
 
+#include <windows.h>
+
 #include "CVw32CaptureScreen.h"
 
 using namespace cvw32capturescreen;
 
-cv::Mat cvw32capscr(const cv::Rect &rct, const cv::Size &sz)
+#ifdef __MAKE_DLL__
+
+namespace cvw32capturescreen {
+
+DllExport cv::Mat cvw32capscr(const cv::Rect &rct, const cv::Size &sz)
 {
   BITMAPINFO bmi;
   bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
@@ -68,7 +87,9 @@ cv::Mat cvw32capscr(const cv::Rect &rct, const cv::Size &sz)
   return im;
 }
 
-#if 1
+}
+
+#else
 
 void dspFPS(const cv::Mat &frm, int r, int c,
   const cv::Scalar &col, double sz, int th,
