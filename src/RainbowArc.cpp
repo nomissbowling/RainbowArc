@@ -75,7 +75,9 @@ string rainbow(int ac, char **av)
         uchar q = *u++;
         bool o = true;
         uchar hue = h[i];
+#if 1 // straight cloud arc fan
         uchar t = (uchar)(179 * ((hsv.rows - j) + i) / (hsv.rows + hsv.cols));
+#endif
         hue = 179 - ((t + 15) % 180);
         // if(hue > 135) o = false; // 270 < Hue < 360
         h[i] = cv::saturate_cast<uchar>((o ? cnt + hue : h[i]) % 180); // H

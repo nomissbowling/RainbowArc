@@ -1,9 +1,9 @@
 /*
-  RainbowArc.h
+  CVw32CaptureScreen.h
 */
 
-#ifndef __RAINBOWARC_H__
-#define __RAINBOWARC_H__
+#ifndef __CVW32CAPTURESCREEN_H__
+#define __CVW32CAPTURESCREEN_H__
 
 // use CV_PI instead of M_PI
 // #define _USE_MATH_DEFINES
@@ -14,10 +14,12 @@
 #include <sstream>
 #include <vector>
 
-namespace rainbowarc {
+#include <windows.h>
+
+namespace cvw32capturescreen {
 
 using namespace std;
 
 }
 
-#endif // __RAINBOWARC_H__
+#endif // __CVW32CAPTURESCREEN_H__
