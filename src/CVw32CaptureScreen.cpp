@@ -116,14 +116,16 @@ cv::Mat CVw32CapScr::cap(const cv::Size &sz)
 
 void dspFPS(const cv::Mat &frm, int r, int c,
   const cv::Scalar &col, double sz, int th,
-  char *s0, double fps, char *s1, double ms, char *s2, int64 tick)
+  const vector<string> &s0, double fps,
+  const vector<string> &s1, double ms,
+  const vector<string> &s2, int64 tick)
 {
   ostringstream oss;
   // oss.str("");
   // oss.clear(stringstream::goodbit);
-  oss << s0 << fixed << setprecision(1) << fps;
-  oss << s1 << fixed << setprecision(1) << ms;
-  oss << s2 << hex << setw(8) << setfill('0') << tick;
+  oss << s0[0] << fixed << setprecision(1) << fps << s0[1];
+  oss << s1[0] << fixed << setprecision(1) << ms << s1[1];
+  oss << s2[0] << hex << setw(8) << setfill('0') << tick << s2[1];
   cv::putText(frm, oss.str(),
     cv::Point(2 + 16 * c, 32 * (r + 1)), // top-left
     cv::FONT_HERSHEY_SIMPLEX, sz, col, th, // thickness=1
@@ -175,13 +177,13 @@ string test_cvw32capscr(int ac, char **av)
       tm.start();
     }
     dspFPS(frm, 0, 0, cv::Scalar(255, 255, 0), 1.0, 2,
-      "cv ", 1000 * frdif / dur,
-      "FPS, ", dur,
-      "ms, Tick ", ck);
+      vector<string>({"cv ", "FPS, "}), 1000 * frdif / dur,
+      vector<string>({"", "ms, "}), dur,
+      vector<string>({"Tick ", ""}), ck);
     dspFPS(frm, 1, 0, cv::Scalar(255, 0, 255), 1.0, 2,
-      "tm ", tm.getFPS(),
-      "FPS, TSec ", tm.getTimeSec(),
-      ", Tick ", tm.getTimeTicks());
+      vector<string>({"tm ", "FPS, "}), tm.getFPS(),
+      vector<string>({"T ", "s, "}), tm.getTimeSec(),
+      vector<string>({"Tick ", ""}), tm.getTimeTicks());
 #if 1 // PinP
     cv::Size sz(frm.cols / 2, frm.rows / 2);
     cv::Size thinfrm(4, 3);
