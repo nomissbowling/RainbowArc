@@ -110,6 +110,39 @@ cv::Mat CVw32CapScr::cap(const cv::Size &sz)
   return im;
 }
 
+DllExport cv::Mat pinp(cv::Mat &frm, const cv::Mat &pic)
+{
+  cv::Size sz(frm.cols / 2, frm.rows / 2);
+  cv::Size thinfrm(4, 3);
+  cv::Size szPinP(sz.width - 2 * thinfrm.width, sz.height - 2 * thinfrm.height);
+  cv::Point ptPinP(sz.width + thinfrm.width, sz.height + thinfrm.height);
+  cv::Rect roi(ptPinP, szPinP);
+  cv::Mat frm_roi = frm(roi);
+#if 0 // PinP 1/4:1/4 (cut by same scale roi)
+  cv::Mat pic_roi = pic(roi);
+  pic_roi.copyTo(frm_roi);
+#else // PinP 1:1/4 (all area)
+  cv::Mat tmp;
+  cv::resize(pic, tmp, roi.size(), 0, 0, cv::INTER_LANCZOS4);
+  tmp.copyTo(frm_roi);
+#endif
+  return frm;
+}
+
+DllExport cv::Mat pinp(cv::Mat &frm, cv::VideoCapture &cap)
+{
+  cv::Mat tmp;
+  cap >> tmp;
+  return pinp(frm, tmp);
+}
+
+DllExport cv::Mat pinp(cv::VideoCapture &cap, const cv::Mat &pic)
+{
+  cv::Mat tmp;
+  cap >> tmp;
+  return pinp(tmp, pic);
+}
+
 }
 
 #else
@@ -184,26 +217,14 @@ string test_cvw32capscr(int ac, char **av)
       vector<string>({"tm ", "FPS, "}), tm.getFPS(),
       vector<string>({"T ", "s, "}), tm.getTimeSec(),
       vector<string>({"Tick ", ""}), tm.getTimeTicks());
-#if 1 // PinP
-    cv::Size sz(frm.cols / 2, frm.rows / 2);
-    cv::Size thinfrm(4, 3);
-    cv::Size szPinP(sz.width - 2*thinfrm.width, sz.height - 2*thinfrm.height);
-    cv::Point ptPinP(sz.width + thinfrm.width, sz.height + thinfrm.height);
-    cv::Rect roi(ptPinP, szPinP);
-    cv::Mat frm_roi = frm(roi);
-    cv::Mat tmp;
-    cap >> tmp;
-#if 0 // PinP 1/4:1/4 (cut by same scale roi)
-    cv::Mat tmp_roi = tmp(roi);
-    tmp_roi.copyTo(frm_roi);
-#else // PinP 1:1/4 (all area)
-    cv::resize(tmp, tmp, roi.size(), 0, 0, cv::INTER_LANCZOS4);
-    tmp.copyTo(frm_roi);
-#endif
-#endif
 #endif
     cv::imshow(wn[0], frm);
+#if 1 // PinP
+    // cv::Mat im = pinp(frm, cap);
+    cv::Mat im = pinp(cap, frm);
+#else
     cv::Mat im(frm);
+#endif
     wr << im;
     cv::imshow(wn[3], im);
     ++cnt;

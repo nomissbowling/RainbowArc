@@ -37,6 +37,10 @@ public:
   cv::Mat cap(const cv::Size &sz);
 };
 
+DllExport cv::Mat pinp(cv::Mat &frm, const cv::Mat &pic);
+DllExport cv::Mat pinp(cv::Mat &frm, cv::VideoCapture &cap);
+DllExport cv::Mat pinp(cv::VideoCapture &cap, const cv::Mat &pic);
+
 }
 
 #endif // __CVW32CAPTURESCREEN_H__

@@ -64,6 +64,8 @@ string rainbow(int ac, char **av)
     cv::resize(frm, frm, cv::Size(width, height), 0, 0, cv::INTER_LANCZOS4);
 #else // fake input from screen
     frm = cvw32cs.cap(cv::Size(width, height));
+    frm = pinp(frm, cap);
+    // frm = pinp(cap, frm);
 #endif
 #endif
     cv::imshow(wn[0], frm);
@@ -112,6 +114,11 @@ string rainbow(int ac, char **av)
 #else
     cv::Mat im(frm);
     hsv.copyTo(im, pl[1]);
+#endif
+#if 1 // PinP
+    cv::cvtColor(im, im, CV_BGRA2BGR); // to be same as cap channels (CV_8UC3)
+    // im = pinp(im, cap);
+    im = pinp(cap, im);
 #endif
     wr << im;
     cv::imshow(wn[3], im);
