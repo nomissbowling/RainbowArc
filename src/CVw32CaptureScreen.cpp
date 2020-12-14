@@ -182,6 +182,23 @@ string test_cvw32capscr(int ac, char **av)
       "tm ", tm.getFPS(),
       "FPS, TSec ", tm.getTimeSec(),
       ", Tick ", tm.getTimeTicks());
+#if 1 // PinP
+    cv::Size sz(frm.cols / 2, frm.rows / 2);
+    cv::Size thinfrm(4, 3);
+    cv::Size szPinP(sz.width - 2*thinfrm.width, sz.height - 2*thinfrm.height);
+    cv::Point ptPinP(sz.width + thinfrm.width, sz.height + thinfrm.height);
+    cv::Rect roi(ptPinP, szPinP);
+    cv::Mat frm_roi = frm(roi);
+    cv::Mat tmp;
+    cap >> tmp;
+#if 0 // PinP 1/4:1/4 (cut by same scale roi)
+    cv::Mat tmp_roi = tmp(roi);
+    tmp_roi.copyTo(frm_roi);
+#else // PinP 1:1/4 (all area)
+    cv::resize(tmp, tmp, roi.size(), 0, 0, cv::INTER_LANCZOS4);
+    tmp.copyTo(frm_roi);
+#endif
+#endif
 #endif
     cv::imshow(wn[0], frm);
     cv::Mat im(frm);
