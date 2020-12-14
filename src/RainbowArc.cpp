@@ -53,13 +53,18 @@ string rainbow(int ac, char **av)
   cv::VideoWriter wr("Rainbow.mp4", fourcc, fps, cv::Size(width, height), col);
   int cnt = 0;
   cv::Mat frm;
+#if 0
   while(cap.read(frm)){
+#else
+  CVw32CapScr cvw32cs(cv::Rect(800, 200, 320, 240));
+  while(true){
 #if 0 // fake input from image
     frm = cv::imread("Rainbow_pen.png", -1);
     // cv::cvtColor(frm, frm, CV_BGR2RGB);
     cv::resize(frm, frm, cv::Size(width, height), 0, 0, cv::INTER_LANCZOS4);
 #else // fake input from screen
-    frm = cvw32capscr(cv::Rect(800, 200, 320, 240), cv::Size(width, height));
+    frm = cvw32cs.cap(cv::Size(width, height));
+#endif
 #endif
     cv::imshow(wn[0], frm);
     cv::Mat gr, hsv;

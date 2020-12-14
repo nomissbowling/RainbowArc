@@ -56,34 +56,57 @@ using namespace cvw32capturescreen;
 
 namespace cvw32capturescreen {
 
-DllExport cv::Mat cvw32capscr(const cv::Rect &rct, const cv::Size &sz)
-{
+typedef struct _CVw32CapScrFake {
   BITMAPINFO bmi;
-  bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-  bmi.bmiHeader.biWidth = rct.width;
-  bmi.bmiHeader.biHeight = -rct.height; // reverse top bottom
-  bmi.bmiHeader.biPlanes = 1;
-  bmi.bmiHeader.biBitCount = 24; // or 32
-  bmi.bmiHeader.biCompression = BI_RGB;
-  LPDWORD buf = NULL; // CreateDIBSection
-  HWND wnd = GetDesktopWindow();
-  HDC dc = GetDC(wnd);
-  HDC mem = CreateCompatibleDC(dc);
-  HBITMAP bmp = CreateDIBSection(dc, &bmi, DIB_RGB_COLORS, // or RGBA
-    (void **)&buf, NULL, 0);
-  HBITMAP obmp = (HBITMAP)SelectObject(mem, bmp);
+  LPDWORD buf; // set by CreateDIBSection later
+  HWND wnd;
+  HDC dc, mem;
+  HBITMAP bmp, obmp;
+} CVw32CapScrFake;
 
+void CVw32CapScr::Init()
+{
+  if(!fakeptr){
+    fakeptr = (void *)new CVw32CapScrFake;
+    CVw32CapScrFake *p = (CVw32CapScrFake *)fakeptr;
+    p->bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+    p->bmi.bmiHeader.biWidth = rct.width;
+    p->bmi.bmiHeader.biHeight = -rct.height; // reverse top bottom
+    p->bmi.bmiHeader.biPlanes = 1;
+    p->bmi.bmiHeader.biBitCount = 24; // or 32
+    p->bmi.bmiHeader.biCompression = BI_RGB;
+    p->wnd = GetDesktopWindow();
+    p->dc = GetDC(p->wnd);
+    p->mem = CreateCompatibleDC(p->dc);
+    p->bmp = CreateDIBSection(p->dc, &p->bmi, DIB_RGB_COLORS, // or RGBA
+      (void **)&p->buf, NULL, 0);
+    p->obmp = (HBITMAP)SelectObject(p->mem, p->bmp);
+  }
+}
+
+void CVw32CapScr::Dispose()
+{
+  if(fakeptr){
+    CVw32CapScrFake *p = (CVw32CapScrFake *)fakeptr;
+    SelectObject(p->mem, p->obmp);
+    DeleteObject(p->bmp);
+    DeleteDC(p->mem);
+    ReleaseDC(p->wnd, p->dc);
+    delete fakeptr;
+    fakeptr = NULL;
+  }
+}
+
+cv::Mat CVw32CapScr::cap(const cv::Size &sz)
+{
+  if(!fakeptr) return cv::Mat(sz.height, sz.width, CV_8UC3); // or CV_8UC4
   // cv::Mat im = cv::imread("Rainbow_pen.png", -1);
   cv::Mat im(rct.height, rct.width, CV_8UC3); // or CV_8UC4
-  BitBlt(mem, 0, 0, rct.width, rct.height, dc, rct.x, rct.y, SRCCOPY);
-  GetDIBits(mem, bmp, 0, rct.height, im.data, &bmi, DIB_RGB_COLORS); // or RGBA
+  CVw32CapScrFake *p = (CVw32CapScrFake *)fakeptr;
+  BitBlt(p->mem, 0, 0, rct.width, rct.height, p->dc, rct.x, rct.y, SRCCOPY);
+  GetDIBits(p->mem, p->bmp, 0, rct.height, im.data, &p->bmi, DIB_RGB_COLORS); // or RGBA
   // cv::cvtColor(im, im, CV_BGR2RGB);
   cv::resize(im, im, sz, 0, 0, cv::INTER_LANCZOS4);
-
-  SelectObject(mem, obmp);
-  DeleteObject(bmp);
-  DeleteDC(mem);
-  ReleaseDC(wnd, dc);
   return im;
 }
 
@@ -135,9 +158,12 @@ string test_cvw32capscr(int ac, char **av)
   tm.start();
   int cnt = 0, frdif = 30;
   cv::Mat frm;
+#if 0
   while(cap.read(frm)){
-#if 1 // fake input from screen
-    frm = cvw32capscr(cv::Rect(960, 512, 320, 240), cv::Size(width, height));
+#else // fake input from screen
+  CVw32CapScr cvw32cs(cv::Rect(960, 512, 320, 240));
+  while(true){
+    frm = cvw32cs.cap(cv::Size(width, height));
     if(cnt % frdif == 0){
       int64 newtick = cv::getTickCount();
       ck = newtick - tick;

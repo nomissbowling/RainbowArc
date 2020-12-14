@@ -25,7 +25,17 @@ namespace cvw32capturescreen {
 
 using namespace std;
 
-DllExport cv::Mat cvw32capscr(const cv::Rect &rct, const cv::Size &sz);
+class DllExport CVw32CapScr {
+private:
+  cv::Rect rct;
+  void *fakeptr;
+public:
+  CVw32CapScr(const cv::Rect &_rct) : rct(_rct), fakeptr(NULL) { Init(); }
+  virtual ~CVw32CapScr(){ Dispose(); }
+  void Init();
+  void Dispose();
+  cv::Mat cap(const cv::Size &sz);
+};
 
 }
 
