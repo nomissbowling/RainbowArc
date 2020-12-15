@@ -143,6 +143,24 @@ DllExport cv::Mat pinp(cv::VideoCapture &cap, const cv::Mat &pic)
   return pinp(tmp, pic);
 }
 
+DllExport vector<int> getHalfMoonROI(int r)
+{
+  vector<int> vec(r + 1);
+  for(int y = 0; y <= r; ++y) vec[y] = cvRound(sqrt((double)r * r - y * y));
+  return vec;
+}
+
+DllExport void drawCircularROI(cv::Mat &im, const cv::Point &o, int r,
+  const cv::Vec3b &bgr)
+{
+  vector<int> xvec = getHalfMoonROI(r);
+  cv::Mat_<cv::Vec3b> &pix = (cv::Mat_<cv::Vec3b> &)im;
+  for(int y = -r; y <= r; ++y){
+    int xc = xvec[abs(y)];
+    for(int x = -xc; x <= xc; ++x) pix(o.y + y, o.x + x) = bgr;
+  }
+}
+
 }
 
 #else
@@ -218,6 +236,8 @@ string test_cvw32capscr(int ac, char **av)
       vector<string>({"T ", "s, "}), tm.getTimeSec(),
       vector<string>({"Tick ", ""}), tm.getTimeTicks());
 #endif
+    drawCircularROI(frm, cv::Point(300, 220), 32, cv::Vec3b(32, 192, 240));
+    drawCircularROI(frm, cv::Point(320, 240), 8, cv::Vec3b(240, 32, 192));
     cv::imshow(wn[0], frm);
 #if 1 // PinP
     // cv::Mat im = pinp(frm, cap);
