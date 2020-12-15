@@ -165,24 +165,6 @@ DllExport void drawCircularROI(cv::Mat &im, const cv::Point &o, int r,
 
 #else
 
-void dspFPS(const cv::Mat &frm, int r, int c,
-  const cv::Scalar &col, double sz, int th,
-  const vector<string> &s0, double fps,
-  const vector<string> &s1, double ms,
-  const vector<string> &s2, int64 tick)
-{
-  ostringstream oss;
-  // oss.str("");
-  // oss.clear(stringstream::goodbit);
-  oss << s0[0] << fixed << setprecision(1) << fps << s0[1];
-  oss << s1[0] << fixed << setprecision(1) << ms << s1[1];
-  oss << s2[0] << hex << setw(8) << setfill('0') << tick << s2[1];
-  cv::putText(frm, oss.str(),
-    cv::Point(2 + 16 * c, 32 * (r + 1)), // top-left
-    cv::FONT_HERSHEY_SIMPLEX, sz, col, th, // thickness=1
-    cv::LINE_AA, false); // lineType=LINE_8, bottomLeftOrigin=false
-}
-
 string test_cvw32capscr(int ac, char **av)
 {
   vector<string> wn({"original", "gray", "Hue", "Alpha"});
@@ -205,11 +187,7 @@ string test_cvw32capscr(int ac, char **av)
   fourcc = 0x00000020; // fallback tag
   bool col = true;
   cv::VideoWriter wr("CapScr.mp4", fourcc, fps, cv::Size(width, height), col);
-  double dur = 0.0, dfreq = 1000.0 / cv::getTickFrequency();
-  int64 ck = 0, tick = cv::getTickCount();
-  cv::TickMeter tm; // not support or changed spec on some OpenCV version
-  tm.start();
-  int cnt = 0, frdif = 30;
+  CVtickFPS tfps;
   cv::Mat frm;
 #if 0
   while(cap.read(frm)){
@@ -217,25 +195,9 @@ string test_cvw32capscr(int ac, char **av)
   CVw32CapScr cvw32cs(cv::Rect(960, 512, 320, 240));
   while(true){
     frm = cvw32cs.cap(cv::Size(width, height));
-    if(cnt % frdif == 0){
-      int64 newtick = cv::getTickCount();
-      ck = newtick - tick;
-      dur = dfreq * ck;
-      tick = newtick;
-      tm.stop();
-      // fps = frdif / tm.getTimeSec(); // divide by 0 ?
-      tm.reset();
-      tm.start();
-    }
-    dspFPS(frm, 0, 0, cv::Scalar(255, 255, 0), 1.0, 2,
-      vector<string>({"cv ", "FPS, "}), 1000 * frdif / dur,
-      vector<string>({"", "ms, "}), dur,
-      vector<string>({"Tick ", ""}), ck);
-    dspFPS(frm, 1, 0, cv::Scalar(255, 0, 255), 1.0, 2,
-      vector<string>({"tm ", "FPS, "}), tm.getFPS(),
-      vector<string>({"T ", "s, "}), tm.getTimeSec(),
-      vector<string>({"Tick ", ""}), tm.getTimeTicks());
 #endif
+    tfps.update();
+    tfps.dsp(frm);
     drawCircularROI(frm, cv::Point(300, 220), 32, cv::Vec3b(32, 192, 240));
     drawCircularROI(frm, cv::Point(320, 240), 8, cv::Vec3b(240, 32, 192));
     cv::imshow(wn[0], frm);
@@ -247,7 +209,6 @@ string test_cvw32capscr(int ac, char **av)
 #endif
     wr << im;
     cv::imshow(wn[3], im);
-    ++cnt;
     int k = cv::waitKey(1); // 1ms > 15ms ! on Windows
     if(k == 'q' || k == '\x1b') break;
   }

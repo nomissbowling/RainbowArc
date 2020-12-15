@@ -45,6 +45,63 @@ DllExport vector<int> getHalfMoonROI(int r);
 DllExport void drawCircularROI(cv::Mat &im, const cv::Point &o, int r,
   const cv::Vec3b &bgr);
 
+class DllExport CVtickFPS {
+private:
+  double dur, dfreq;
+  int64 ck, tck;
+  int cnt, frdif;
+  cv::TickMeter tm; // not support or changed spec on some OpenCV version
+public:
+  CVtickFPS() : dur(0), dfreq(1), ck(0), tck(0), cnt(0), frdif(30) { Init(); }
+  virtual ~CVtickFPS(){ Dispose(); }
+  void Init(){
+    dur = 0.0, dfreq = 1000.0 / cv::getTickFrequency();
+    ck = 0, tck = cv::getTickCount();
+    cnt = 0, frdif = 30;
+    tm.start();
+  }
+  void Dispose(){}
+  void update(){
+    if(cnt++ % frdif) return;
+    int64 newtick = cv::getTickCount();
+    ck = newtick - tck;
+    dur = dfreq * ck;
+    tck = newtick;
+    tm.stop();
+    // fps = frdif / tm.getTimeSec(); // divide by 0 ?
+    tm.reset();
+    tm.start();
+  }
+  int getCnt(){ return cnt; }
+  double getFPS(){ return 1000 * frdif / dur; }
+  void dspFPS(cv::Mat &frm, int r, int c,
+    const cv::Scalar &col, double sz, int th,
+    const vector<string> &s0, double fps,
+    const vector<string> &s1, double ms,
+    const vector<string> &s2, int64 tick){
+    ostringstream oss;
+    // oss.str("");
+    // oss.clear(stringstream::goodbit);
+    oss << s0[0] << fixed << setprecision(1) << fps << s0[1];
+    oss << s1[0] << fixed << setprecision(1) << ms << s1[1];
+    oss << s2[0] << hex << setw(8) << setfill('0') << tick << s2[1];
+    cv::putText(frm, oss.str(),
+      cv::Point(2 + 16 * c, 32 * (r + 1)), // top-left
+      cv::FONT_HERSHEY_SIMPLEX, sz, col, th, // thickness=1
+      cv::LINE_AA, false); // lineType=LINE_8, bottomLeftOrigin=false
+  }
+  void dsp(cv::Mat &frm){
+    dspFPS(frm, 0, 0, cv::Scalar(255, 255, 0), 1.0, 2,
+      vector<string>({"cv ", "FPS, "}), getFPS(),
+      vector<string>({"", "ms, "}), dur,
+      vector<string>({"Tick ", ""}), ck);
+    dspFPS(frm, 1, 0, cv::Scalar(255, 0, 255), 1.0, 2,
+      vector<string>({"tm ", "FPS, "}), tm.getFPS(),
+      vector<string>({"T ", "s, "}), tm.getTimeSec(),
+      vector<string>({"Tick ", ""}), tm.getTimeTicks());
+  }
+};
+
 }
 
 #endif // __CVW32CAPTURESCREEN_H__

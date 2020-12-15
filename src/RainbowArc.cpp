@@ -51,7 +51,7 @@ string rainbow(int ac, char **av)
   fourcc = 0x00000020; // fallback tag
   bool col = true;
   cv::VideoWriter wr("Rainbow.mp4", fourcc, fps, cv::Size(width, height), col);
-  int cnt = 0;
+  CVtickFPS tfps;
   cv::Mat frm;
 #if 0
   while(cap.read(frm)){
@@ -68,6 +68,9 @@ string rainbow(int ac, char **av)
     // frm = pinp(cap, frm);
 #endif
 #endif
+    int cnt = tfps.getCnt();
+    tfps.update();
+    tfps.dsp(frm);
     cv::imshow(wn[0], frm);
     cv::Mat gr, hsv;
     cv::cvtColor(frm, gr, CV_BGR2GRAY);
@@ -122,7 +125,6 @@ string rainbow(int ac, char **av)
 #endif
     wr << im;
     cv::imshow(wn[3], im);
-    ++cnt;
     int k = cv::waitKey(1); // 1ms > 15ms ! on Windows
     if(k == 'q' || k == '\x1b') break;
   }
