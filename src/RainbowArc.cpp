@@ -77,6 +77,11 @@ string rainbow(int ac, char **av)
     cv::GaussianBlur(gr, gr, cv::Size(7, 7), 1.5, 1.5);
     // cv::LUT(gr, gammaLUT, gr);
     cv::imshow(wn[1], gr);
+#if 0 // fast ? through (no process)
+    frm.copyTo(hsv);
+    cv::imshow(wn[2], hsv); // hsv.channels() == 3
+    cv::Mat im(hsv);
+#else // slow ?
     cv::cvtColor(frm, hsv, CV_BGR2HSV);
     vector<cv::Mat> pl; // H S V planes
     cv::split(hsv, pl);
@@ -122,6 +127,7 @@ string rainbow(int ac, char **av)
     cv::cvtColor(im, im, CV_BGRA2BGR); // to be same as cap channels (CV_8UC3)
     // im = pinp(im, cap);
     im = pinp(cap, im);
+#endif
 #endif
     wr << im;
     cv::imshow(wn[3], im);
