@@ -73,7 +73,7 @@ public:
     tm.start();
   }
   int getCnt(){ return cnt; }
-  double getFPS(){ return 1000 * frdif / dur; }
+  double getFPS(){ return 1000 * ((cnt <= frdif) ? 1 : frdif) / dur; }
   void dspFPS(cv::Mat &frm, int r, int c,
     const cv::Scalar &col, double sz, int th,
     const vector<string> &s0, double fps,
