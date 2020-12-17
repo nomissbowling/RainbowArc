@@ -51,7 +51,7 @@ string rainbow(int ac, char **av)
   fourcc = 0x00000020; // fallback tag
   bool col = true;
   cv::VideoWriter wr("Rainbow.mp4", fourcc, fps, cv::Size(width, height), col);
-  CVtickFPS tfps;
+  CVtickFPS tfps(10);
   cv::Mat frm;
 #if 0
   while(cap.read(frm)){

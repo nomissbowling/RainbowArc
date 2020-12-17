@@ -52,14 +52,10 @@ private:
   int cnt, frdif;
   cv::TickMeter tm; // not support or changed spec on some OpenCV version
 public:
-  CVtickFPS() : dur(0), dfreq(1), ck(0), tck(0), cnt(0), frdif(30) { Init(); }
+  CVtickFPS(int frd=30) : dur(0), dfreq(1000.0 / cv::getTickFrequency()),
+    ck(0), tck(cv::getTickCount()), cnt(0), frdif(frd) { Init(); }
   virtual ~CVtickFPS(){ Dispose(); }
-  void Init(){
-    dur = 0.0, dfreq = 1000.0 / cv::getTickFrequency();
-    ck = 0, tck = cv::getTickCount();
-    cnt = 0, frdif = 30;
-    tm.start();
-  }
+  void Init(){ tm.start(); }
   void Dispose(){}
   void update(){
     if(cnt++ % frdif) return;
