@@ -153,6 +153,29 @@ DllExport cv::Mat rotROI(const cv::Mat &im, const cv::RotatedRect &rrct)
   return crp;
 }
 
+DllExport void drawRotRect(cv::Mat &im, const cv::RotatedRect &rrct, int th,
+  const cv::Vec3b &bgr)
+{
+  cv::Point2f vert2f[4];
+  rrct.points(vert2f);
+  vector<cv::Point> vec(4);
+  for(int i = 0; i < 4; ++i) vec[i] = vert2f[i];
+  cv::Mat vm(vec);
+  const cv::Point *pts = (const cv::Point *)vm.data;
+  int npts = vm.rows;
+  cv::polylines(im, &pts, &npts, 1, true, bgr, th);
+}
+
+DllExport void drawRotRectFill(cv::Mat &im, const cv::RotatedRect &rrct,
+  const cv::Vec3b &bgr)
+{
+  cv::Point2f vert2f[4];
+  rrct.points(vert2f);
+  cv::Point v[4];
+  for(int i = 0; i < 4; ++i) v[i] = vert2f[i];
+  cv::fillConvexPoly(im, v, 4, bgr);
+}
+
 DllExport vector<int> getHalfMoonROI(int r)
 {
   vector<int> vec(r + 1);
@@ -212,7 +235,12 @@ string test_cvw32capscr(int ac, char **av)
     cv::Point ct(300, 220);
     drawCircularROI(frm, ct, 32, cv::Vec3b(32, 192, 240));
     drawCircularROI(frm, cv::Point(320, 240), 8, cv::Vec3b(240, 32, 192));
-    cv::RotatedRect rrct = cv::RotatedRect(ct, cv::Size(400, 300), cnt % 360);
+    int rot = cnt % 360;
+    cv::RotatedRect rf = cv::RotatedRect(ct, cv::Size(24, 16), 60 + rot);
+    drawRotRectFill(frm, rf, cv::Vec3b(192, 240, 32));
+    cv::RotatedRect rr = cv::RotatedRect(ct, cv::Size(16, 8), 30);
+    drawRotRect(frm, rr, 2, cv::Vec3b(32, 240, 192));
+    cv::RotatedRect rrct = cv::RotatedRect(ct, cv::Size(480, 360), rot);
     frm = pinp(frm, rotROI(frm, rrct));
     cv::imshow(wn[0], frm);
 #if 1 // PinP
