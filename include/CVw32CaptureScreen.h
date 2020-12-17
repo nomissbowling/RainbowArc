@@ -41,6 +41,8 @@ DllExport cv::Mat pinp(cv::Mat &frm, const cv::Mat &pic);
 DllExport cv::Mat pinp(cv::Mat &frm, cv::VideoCapture &cap);
 DllExport cv::Mat pinp(cv::VideoCapture &cap, const cv::Mat &pic);
 
+DllExport cv::Mat rotROI(const cv::Mat &im, const cv::RotatedRect &rrct);
+
 DllExport vector<int> getHalfMoonROI(int r);
 DllExport void drawCircularROI(cv::Mat &im, const cv::Point &o, int r,
   const cv::Vec3b &bgr);

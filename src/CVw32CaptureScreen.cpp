@@ -143,6 +143,16 @@ DllExport cv::Mat pinp(cv::VideoCapture &cap, const cv::Mat &pic)
   return pinp(tmp, pic);
 }
 
+DllExport cv::Mat rotROI(const cv::Mat &im, const cv::RotatedRect &rrct)
+{
+  cv::Mat m = cv::getRotationMatrix2D(rrct.center, rrct.angle, 1.0);
+  cv::Mat rot;
+  cv::warpAffine(im, rot, m, im.size(), cv::INTER_LANCZOS4);
+  cv::Mat crp;
+  cv::getRectSubPix(rot, rrct.size, rrct.center, crp);
+  return crp;
+}
+
 DllExport vector<int> getHalfMoonROI(int r)
 {
   vector<int> vec(r + 1);
@@ -196,10 +206,14 @@ string test_cvw32capscr(int ac, char **av)
   while(true){
     frm = cvw32cs.cap(cv::Size(width, height));
 #endif
+    int cnt = tfps.getCnt();
     tfps.update();
     tfps.dsp(frm);
-    drawCircularROI(frm, cv::Point(300, 220), 32, cv::Vec3b(32, 192, 240));
+    cv::Point ct(300, 220);
+    drawCircularROI(frm, ct, 32, cv::Vec3b(32, 192, 240));
     drawCircularROI(frm, cv::Point(320, 240), 8, cv::Vec3b(240, 32, 192));
+    cv::RotatedRect rrct = cv::RotatedRect(ct, cv::Size(400, 300), cnt % 360);
+    frm = pinp(frm, rotROI(frm, rrct));
     cv::imshow(wn[0], frm);
 #if 1 // PinP
     // cv::Mat im = pinp(frm, cap);
