@@ -153,27 +153,30 @@ DllExport cv::Mat rotROI(const cv::Mat &im, const cv::RotatedRect &rrct)
   return crp;
 }
 
+DllExport cv::Mat rotRectPts(const cv::RotatedRect &rrct)
+{
+  const int npts = 4;
+  cv::Point2f vert2f[npts];
+  rrct.points(vert2f);
+  vector<cv::Point> vec(npts);
+  for(int i = 0; i < npts; ++i) vec[i] = vert2f[i];
+  return cv::Mat(vec, true); // copy vec memory
+}
+
 DllExport void drawRotRect(cv::Mat &im, const cv::RotatedRect &rrct, int th,
   const cv::Vec3b &bgr)
 {
-  cv::Point2f vert2f[4];
-  rrct.points(vert2f);
-  vector<cv::Point> vec(4);
-  for(int i = 0; i < 4; ++i) vec[i] = vert2f[i];
-  cv::Mat vm(vec);
-  const cv::Point *pts = (const cv::Point *)vm.data;
-  int npts = vm.rows;
-  cv::polylines(im, &pts, &npts, 1, true, bgr, th);
+  cv::Mat vm = rotRectPts(rrct);
+  cv::Point *ppts[] = {(cv::Point *)vm.data};
+  int pnpts[] = {vm.rows};
+  cv::polylines(im, ppts, pnpts, sizeof(ppts)/sizeof(ppts[0]), true, bgr, th);
 }
 
 DllExport void drawRotRectFill(cv::Mat &im, const cv::RotatedRect &rrct,
   const cv::Vec3b &bgr)
 {
-  cv::Point2f vert2f[4];
-  rrct.points(vert2f);
-  cv::Point v[4];
-  for(int i = 0; i < 4; ++i) v[i] = vert2f[i];
-  cv::fillConvexPoly(im, v, 4, bgr);
+  cv::Mat vm = rotRectPts(rrct);
+  cv::fillConvexPoly(im, (cv::Point *)vm.data, vm.rows, bgr);
 }
 
 DllExport vector<int> getHalfMoonROI(int r)
