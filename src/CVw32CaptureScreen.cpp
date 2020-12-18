@@ -130,8 +130,13 @@ DllExport cv::Mat pinp(cv::Mat &frm, const cv::Mat &pic)
 #else
   cv::Size fsz = frm.size();
   double r = (double)szPinP.width / pic.size().width; // same with height ratio
+#if 1
   cv::Mat m = (cv::Mat_<double>(2, 3) << r, 0, ptPinP.x, 0, r, ptPinP.y);
   cv::warpAffine(pic, frm, m, fsz, cv::INTER_LANCZOS4, cv::BORDER_TRANSPARENT);
+#else
+  cv::Mat m = (cv::Mat_<double>(3, 3) << r, 0, ptPinP.x, 0, r, ptPinP.y, 0, 0, 1);
+  cv::warpPerspective(pic, frm, m, fsz, cv::INTER_LANCZOS4, cv::BORDER_TRANSPARENT);
+#endif
 #endif
   return frm;
 }
