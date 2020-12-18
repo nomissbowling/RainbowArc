@@ -116,6 +116,7 @@ DllExport cv::Mat pinp(cv::Mat &frm, const cv::Mat &pic)
   cv::Size thinfrm(4, 3);
   cv::Size szPinP(sz.width - 2 * thinfrm.width, sz.height - 2 * thinfrm.height);
   cv::Point ptPinP(sz.width + thinfrm.width, sz.height + thinfrm.height);
+#if 0
   cv::Rect roi(ptPinP, szPinP);
   cv::Mat frm_roi = frm(roi);
 #if 0 // PinP 1/4:1/4 (cut by same scale roi)
@@ -125,6 +126,12 @@ DllExport cv::Mat pinp(cv::Mat &frm, const cv::Mat &pic)
   cv::Mat tmp;
   cv::resize(pic, tmp, roi.size(), 0, 0, cv::INTER_LANCZOS4);
   tmp.copyTo(frm_roi);
+#endif
+#else
+  cv::Size fsz = frm.size();
+  double r = (double)szPinP.width / pic.size().width; // same with height ratio
+  cv::Mat m = (cv::Mat_<double>(2, 3) << r, 0, ptPinP.x, 0, r, ptPinP.y);
+  cv::warpAffine(pic, frm, m, fsz, cv::INTER_LANCZOS4, cv::BORDER_TRANSPARENT);
 #endif
   return frm;
 }
