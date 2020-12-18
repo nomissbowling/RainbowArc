@@ -160,9 +160,17 @@ DllExport cv::Mat rotRectPts(const cv::RotatedRect &rrct)
   const int npts = 4;
   cv::Point2f vert2f[npts];
   rrct.points(vert2f);
+#if 1
   vector<cv::Point> vec(npts);
   for(int i = 0; i < npts; ++i) vec[i] = vert2f[i];
   return cv::Mat(vec, true); // copy vec memory
+#else
+  cv::Mat_<cv::Point> vm_(npts, 1);
+//  for(int i = 0; i < npts; ++i) vm_ << vert2f[i]; // BAD (no compile error)
+  vm_ << vert2f[0], vert2f[1], vert2f[2], vert2f[3]; // OK
+//  vm_ << vert2f; // BAD compile error
+  return vm_;
+#endif
 }
 
 DllExport void drawRotRect(cv::Mat &im, const cv::RotatedRect &rrct, int th,
@@ -247,7 +255,7 @@ string test_cvw32capscr(int ac, char **av)
     drawRotRect(frm, rr, 2, cv::Vec3b(32, 240, 192));
     cv::RotatedRect rrct = cv::RotatedRect(ct, cv::Size(480, 360), rot);
     cv::Mat rroi;
-#if 0
+#if 1
     rroi = rotROI(frm, rrct, cv::BORDER_TRANSPARENT);
 #else
 #if 0
