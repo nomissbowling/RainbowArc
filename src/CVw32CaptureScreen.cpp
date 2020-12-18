@@ -143,11 +143,13 @@ DllExport cv::Mat pinp(cv::VideoCapture &cap, const cv::Mat &pic)
   return pinp(tmp, pic);
 }
 
-DllExport cv::Mat rotROI(const cv::Mat &im, const cv::RotatedRect &rrct)
+DllExport cv::Mat rotROI(const cv::Mat &im, const cv::RotatedRect &rrct,
+  int mode, const cv::Vec3b &bgr)
 {
   cv::Mat m = cv::getRotationMatrix2D(rrct.center, rrct.angle, 1.0);
   cv::Mat rot;
-  cv::warpAffine(im, rot, m, im.size(), cv::INTER_LANCZOS4);
+  if(mode == cv::BORDER_TRANSPARENT) im.copyTo(rot);
+  cv::warpAffine(im, rot, m, im.size(), cv::INTER_LANCZOS4, mode, bgr);
   cv::Mat crp;
   cv::getRectSubPix(rot, rrct.size, rrct.center, crp);
   return crp;
@@ -244,7 +246,17 @@ string test_cvw32capscr(int ac, char **av)
     cv::RotatedRect rr = cv::RotatedRect(ct, cv::Size(16, 8), 30);
     drawRotRect(frm, rr, 2, cv::Vec3b(32, 240, 192));
     cv::RotatedRect rrct = cv::RotatedRect(ct, cv::Size(480, 360), rot);
-    frm = pinp(frm, rotROI(frm, rrct));
+    cv::Mat rroi;
+#if 0
+    rroi = rotROI(frm, rrct, cv::BORDER_TRANSPARENT);
+#else
+#if 0
+    rroi = rotROI(frm, rrct, cv::BORDER_CONSTANT, cv::Vec3b(192, 32, 240));
+#else
+    rroi = rotROI(frm, rrct);
+#endif
+#endif
+    frm = pinp(frm, rroi);
     cv::imshow(wn[0], frm);
 #if 1 // PinP
     // cv::Mat im = pinp(frm, cap);

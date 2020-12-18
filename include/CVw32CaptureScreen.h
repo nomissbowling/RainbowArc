@@ -41,7 +41,8 @@ DllExport cv::Mat pinp(cv::Mat &frm, const cv::Mat &pic);
 DllExport cv::Mat pinp(cv::Mat &frm, cv::VideoCapture &cap);
 DllExport cv::Mat pinp(cv::VideoCapture &cap, const cv::Mat &pic);
 
-DllExport cv::Mat rotROI(const cv::Mat &im, const cv::RotatedRect &rrct);
+DllExport cv::Mat rotROI(const cv::Mat &im, const cv::RotatedRect &rrct,
+  int mode=cv::BORDER_CONSTANT, const cv::Vec3b &bgr=cv::Vec3b(0, 0, 0));
 DllExport cv::Mat rotRectPts(const cv::RotatedRect &rrct);
 DllExport void drawRotRect(cv::Mat &im, const cv::RotatedRect &rrct, int th,
   const cv::Vec3b &bgr);
