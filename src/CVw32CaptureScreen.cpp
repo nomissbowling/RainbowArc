@@ -129,6 +129,15 @@ DllExport cv::Mat pinp(cv::Mat &frm, const cv::Mat &pic)
 #endif
 #else
   cv::Size fsz = frm.size();
+#if 0
+  cv::Size psz = pic.size();
+  vector<cv::Point2f> src({cv::Point(0, 0), cv::Point(psz.width, 0),
+    cv::Point(psz.width, psz.height)});
+  vector<cv::Point2f> dst({ptPinP, ptPinP + cv::Point(szPinP.width, 0),
+    ptPinP + cv::Point(szPinP.width, szPinP.height)});
+  cv::Mat m = cv::getAffineTransform(src, dst);
+  cv::warpAffine(pic, frm, m, fsz, cv::INTER_LANCZOS4, cv::BORDER_TRANSPARENT);
+#else
   double r = (double)szPinP.width / pic.size().width; // same with height ratio
 #if 1
   cv::Mat m = (cv::Mat_<double>(2, 3) << r, 0, ptPinP.x, 0, r, ptPinP.y);
@@ -136,6 +145,7 @@ DllExport cv::Mat pinp(cv::Mat &frm, const cv::Mat &pic)
 #else
   cv::Mat m = (cv::Mat_<double>(3, 3) << r, 0, ptPinP.x, 0, r, ptPinP.y, 0, 0, 1);
   cv::warpPerspective(pic, frm, m, fsz, cv::INTER_LANCZOS4, cv::BORDER_TRANSPARENT);
+#endif
 #endif
 #endif
   return frm;
