@@ -92,7 +92,7 @@ void CVw32CapScr::Dispose()
     DeleteObject(p->bmp);
     DeleteDC(p->mem);
     ReleaseDC(p->wnd, p->dc);
-    delete fakeptr;
+    delete p;
     fakeptr = NULL;
   }
 }
